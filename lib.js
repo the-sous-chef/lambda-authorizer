@@ -31,9 +31,9 @@ var getToken = function (params) {
         throw new Error("Expected 'event.authorizationToken' parameter to be set");
     }
 
-    var match = tokenString.match(/^Bearer (.*)$/);
+    var match = tokenString.match(/^Bearer (.*)$/i);
     if (!match || match.length < 2) {
-        throw new Error("Invalid Authorization token - '" + tokenString + "' does not match 'Bearer .*'");
+        throw new Error("Invalid Authorization token - '" + tokenString + "' does not match 'Bearer .*' or 'bearer .*");
     }
     return match[1];
 }
@@ -54,7 +54,8 @@ module.exports.authenticate = function (params, cb) {
     client.getSigningKey(kid, function (err, key) {
         if(err)
         {
-             cb(err);
+            console.log(err.message);
+            cb(err);
         }
         else 
         {
@@ -67,7 +68,7 @@ module.exports.authenticate = function (params, cb) {
                 }
                 else {
                     // Make sure that the user is a cimpress employee
-                    if(decoded[process.env.CIMPRESS_CLAIM]) {
+                    if(decoded[process.env.CIMPRESS_CLAIM] === true) {
                         cb(null, {
                             principalId: decoded.sub,
                             policyDocument: getPolicyDocument('Allow', params.methodArn),

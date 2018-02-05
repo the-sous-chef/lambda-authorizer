@@ -7,12 +7,12 @@ var lib = require('./lib');
 module.exports.handler = function (event, context) {
   lib.authenticate(event, function (err, data) {
     if (err) {
-      if (!err) context.fail("Unhandled error");
+      if (!err) {
+        context.fail("Unhandled error");
+      }
       context.fail("Unauthorized");
-
     }
     else context.succeed(data);
-
   });
 
 };
