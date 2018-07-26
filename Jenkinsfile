@@ -2,7 +2,7 @@ pipeline {
     agent { label 'MSWPressIntegration-Linux' }
     environment {
         LAMBDA_ARN      = 'arn:aws:lambda:eu-west-1:747351050637:function:jwtAuthorizer'
-        PROJECT_GIT_URL = 'vbustash.vistaprint.net/scm/mipi/on-demand-printing-service.git'
+        PROJECT_GIT_URL = 'vbustash.vistaprint.net/scm/mipi/lambda-authorizer.git'
     }
     stages {
         stage('Build') {
