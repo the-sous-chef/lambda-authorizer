@@ -1,12 +1,15 @@
 {
   "name": "lambda-auth0-authenticator",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "An AWS Lambda function to provide a Custom Authenticator for AWS API Gateway that verifies RS* signed tokens",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/lambda-local --timeout 300 --lambdapath index.js --eventpath event.json"
+    "test": "./node_modules/.bin/lambda-local --timeout 300 --lambdapath index.js --eventpath event.json",
+    "package": "bestzip lambda-authorizer-dist.zip ./node_modules/ index.js lib.js package.json package-lock.json",
+    "deploy": "aws lambda update-function-code -function-name $LAMBDA_ARN --zip-file fileb://lambda-authorizer-dist.zip --publish",
+    "deploy-dry": "aws lambda update-function-code --function-name $LAMBDA_ARN --zip-file fileb://lambda-authorizer-dist.zip --dry-run"
   },
-  "author": "Jason Haines",
+  "author": "MSW Press Integration",
   "license": "Apache-2.0",
   "dependencies": {
     "auth0": "^2.5.0",
@@ -17,11 +20,12 @@
   },
   "devDependencies": {
     "aws-sdk": "2.2.48",
-    "lambda-local": "0.0.9"
+    "lambda-local": "0.0.9",
+    "bestzip": "^1.1.4"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pushpabrol/lambda-jwt-rsa-authorizer.git"
+    "url": "https://vbustash.vistaprint.net/projects/MIPI/repos/lambda-authorizer/browse"
   },
   "keywords": [
     "aws",
@@ -32,7 +36,7 @@
     "lambda"
   ],
   "bugs": {
-    "url": "https://github.com/pushpabrol/lambda-jwt-rsa-authorizer/issues"
+    "url": "https://vbustash.vistaprint.net/projects/MIPI/repos/lambda-authorizer/browse"
   },
-  "homepage": "https://github.com/pushpabrol/lambda-jwt-rsa-authorizer#readme"
+  "homepage": "https://vbustash.vistaprint.net/projects/MIPI/repos/lambda-authorizer/browse"
 }

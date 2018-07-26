@@ -50,6 +50,11 @@ module.exports.authenticate = function (params, cb) {
     });
 
     var decoded = jwt.decode(token, { complete: true });
+    if (decoded === null)
+    {
+        console.log("Could not decode JWT.");
+        cb("Could not decode JWT.");
+    }
     var kid = decoded.header.kid;
     client.getSigningKey(kid, function (err, key) {
         if(err)

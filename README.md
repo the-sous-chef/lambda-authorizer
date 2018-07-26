@@ -98,15 +98,11 @@ An `Action` of `Allow` means the authorizer would have allowed the associated AP
 ## Deploying 
 This code is currently deployed in the Press Integration AWS Account in the jwtAuthorizer Lambda
 
-To create the lambda bundle, zip up the following files and folders:
+To create the lambda bundle, run the following command:
 
-./node_modules/
-./index.js
-./lib.js
-./package-lock.json
-./package.json
+    npm run package
 
-Then upload the zip to the jwtAuthorizer Lambda in EU West 1
+Then upload the zip `lambda-authorizer-dist.zip` to the jwtAuthorizer Lambda in EU West 1.
 
 ## License
 
