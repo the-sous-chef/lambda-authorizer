@@ -6,7 +6,7 @@
   "scripts": {
     "test": "./node_modules/.bin/lambda-local --timeout 300 --lambdapath index.js --eventpath event.json",
     "package": "bestzip lambda-authorizer-dist.zip ./node_modules/ index.js lib.js package.json package-lock.json",
-    "deploy": "aws lambda update-function-code -function-name $LAMBDA_ARN --zip-file fileb://lambda-authorizer-dist.zip --publish",
+    "deploy": "aws lambda update-function-code --function-name $LAMBDA_ARN --zip-file fileb://lambda-authorizer-dist.zip --publish",
     "deploy-dry": "aws lambda update-function-code --function-name $LAMBDA_ARN --zip-file fileb://lambda-authorizer-dist.zip --dry-run"
   },
   "author": "MSW Press Integration",
