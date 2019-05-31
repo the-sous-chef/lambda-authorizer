@@ -7,6 +7,7 @@ stages:
 
 variables:
   AWS_DEFAULT_REGION: eu-west-1
+  LAMBDA_ARN: arn:aws:lambda:eu-west-1:747351050637:function:jwtAuthorizer
 
 install:
   stage: install
@@ -33,6 +34,10 @@ build:
     - install
   script:
     - npm run package
+  artifacts:
+    paths:
+      - lambda-authorizer-dist.zip
+    expire_in: 24 hours
 
 deploy_dry_run:
   stage: deploy
@@ -42,6 +47,7 @@ deploy_dry_run:
     - docker
   dependencies:
     - install
+    - build
   script:
     - npm run deploy-dry
 
@@ -53,5 +59,6 @@ deploy_production:
     - docker
   dependencies:
     - install
+    - build
   script:
     - npm run deploy
