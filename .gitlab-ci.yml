@@ -1,0 +1,57 @@
+image: vistaprintufi/docker-aws-build
+
+stages:
+  - install
+  - build
+  - deploy
+
+variables:
+  AWS_DEFAULT_REGION: eu-west-1
+
+install:
+  stage: install
+  only:
+    - merge_requests
+    - master
+  tags:
+    - docker
+  script:
+    - npm install
+  artifacts:
+    paths:
+      - node_modules
+    expire_in: 1 hour
+
+build:
+  stage: build
+  only:
+    - merge_requests
+    - master
+  tags:
+    - docker
+  dependencies:
+    - install
+  script:
+    - npm run package
+
+deploy_dry_run:
+  stage: deploy
+  only:
+    - merge_requests
+  tags:
+    - docker
+  dependencies:
+    - install
+  script:
+    - npm run deploy-dry
+
+deploy_production:
+  stage: deploy
+  only:
+    - master
+  tags:
+    - docker
+  dependencies:
+    - install
+  script:
+    - npm run deploy
