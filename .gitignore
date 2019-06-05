@@ -6,6 +6,9 @@ npm-debug.log*
 # Visual Studio Code
 .vscode
 
+# WebStorm/JetBrains IDEs
+.idea
+
 tmp
 
 # Runtime data
