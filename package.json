@@ -1,10 +1,10 @@
 {
   "name": "lambda-auth0-authenticator",
-  "version": "0.0.3",
+  "version": "1.1.0",
   "description": "An AWS Lambda function to provide a Custom Authenticator for AWS API Gateway that verifies RS* signed tokens",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/lambda-local --timeout 300 --lambdapath index.js --eventpath event.json",
+    "test": "./node_modules/.bin/lambda-local --timeout 300 --lambda-path index.js --event-path event.json",
     "package": "bestzip lambda-authorizer-dist.zip ./node_modules/ index.js lib.js package.json package-lock.json",
     "deploy": "aws lambda update-function-code --function-name $LAMBDA_ARN --zip-file fileb://lambda-authorizer-dist.zip --publish",
     "deploy-dry": "aws lambda update-function-code --function-name $LAMBDA_ARN --zip-file fileb://lambda-authorizer-dist.zip --dry-run"
@@ -12,20 +12,17 @@
   "author": "MSW Press Integration",
   "license": "Apache-2.0",
   "dependencies": {
-    "auth0": "^2.5.0",
-    "bluebird": "^3.4.6",
-    "dotenv": "^2.0.0",
-    "jsonwebtoken": "^7.4.1",
-    "jwks-rsa": "^1.1.1"
+    "jsonwebtoken": "^8.5.1",
+    "jwks-rsa": "^1.6.0"
   },
   "devDependencies": {
-    "aws-sdk": "2.2.48",
-    "lambda-local": "0.0.9",
-    "bestzip": "^1.1.4"
+    "aws-sdk": "^2.600.0",
+    "bestzip": "^2.1.5",
+    "lambda-local": "^1.6.3"
   },
   "repository": {
     "type": "git",
-    "url": "https://vbustash.vistaprint.net/projects/MIPI/repos/lambda-authorizer/browse"
+    "url": "https://gitlab.com/vistaprint-org/manufacturing-software/press-integration/lambda-authorizer"
   },
   "keywords": [
     "aws",
@@ -36,7 +33,7 @@
     "lambda"
   ],
   "bugs": {
-    "url": "https://vbustash.vistaprint.net/projects/MIPI/repos/lambda-authorizer/browse"
+    "url": "https://gitlab.com/vistaprint-org/manufacturing-software/press-integration/lambda-authorizer"
   },
-  "homepage": "https://vbustash.vistaprint.net/projects/MIPI/repos/lambda-authorizer/browse"
+  "homepage": "https://gitlab.com/vistaprint-org/manufacturing-software/press-integration/lambda-authorizer"
 }

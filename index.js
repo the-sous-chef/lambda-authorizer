@@ -1,7 +1,6 @@
 'use strict';
 
-var lib = require('./lib');
-
+const lib = require('./lib');
 
 // Lambda function index.handler - thin wrapper around lib.authenticate
 module.exports.handler = function (event, context) {
@@ -14,5 +13,4 @@ module.exports.handler = function (event, context) {
     }
     else context.succeed(data);
   });
-
 };
