@@ -27,8 +27,8 @@ deploy_sandbox:
   extends:
     - .deploy
   only:
-    - master
     - merge_requests
+    - master
   environment:
     name: sandbox
 
