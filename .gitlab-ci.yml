@@ -22,17 +22,6 @@ before_script:
     - echo "$STAGE"
     - serverless deploy --stage=$STAGE --verbose
 
-test:
-  stage: test
-  script:
-    - npm run test
-  artifacts:
-    reports:
-      junit: junit.xml
-  only:
-    - merge_requests
-    - master
-
 deploy_sandbox:
   stage: deploy-dev
   extends:
