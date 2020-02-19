@@ -3,12 +3,7 @@
   "version": "1.1.0",
   "description": "An AWS Lambda function to provide a Custom Authenticator for AWS API Gateway that verifies RS* signed tokens",
   "main": "index.js",
-  "scripts": {
-    "test": "./node_modules/.bin/lambda-local --timeout 300 --lambda-path index.js --event-path event.json",
-    "package": "bestzip lambda-authorizer-dist.zip ./node_modules/ index.js lib.js package.json package-lock.json",
-    "deploy": "aws lambda update-function-code --function-name $LAMBDA_ARN --zip-file fileb://lambda-authorizer-dist.zip --publish",
-    "deploy-dry": "aws lambda update-function-code --function-name $LAMBDA_ARN --zip-file fileb://lambda-authorizer-dist.zip --dry-run"
-  },
+  "scripts": {},
   "author": "MSW Press Integration",
   "license": "Apache-2.0",
   "dependencies": {
@@ -16,13 +11,11 @@
     "jwks-rsa": "^1.6.0"
   },
   "devDependencies": {
-    "aws-sdk": "^2.600.0",
-    "bestzip": "^2.1.5",
-    "lambda-local": "^1.6.3"
+    "aws-sdk": "^2.600.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/vistaprint-org/manufacturing-software/press-integration/lambda-authorizer"
+    "url": "https://gitlab.com/vistaprint-org/product-catalog/recommendations/lambda-authorizer"
   },
   "keywords": [
     "aws",
@@ -32,8 +25,5 @@
     "authentication",
     "lambda"
   ],
-  "bugs": {
-    "url": "https://gitlab.com/vistaprint-org/manufacturing-software/press-integration/lambda-authorizer"
-  },
-  "homepage": "https://gitlab.com/vistaprint-org/manufacturing-software/press-integration/lambda-authorizer"
+  "homepage": "https://gitlab.com/vistaprint-org/product-catalog/recommendations/lambda-authorizer"
 }

@@ -1,64 +1,43 @@
-image: vistaprintufi/docker-aws-build
-
-stages:
-  - install
-  - build
-  - deploy
+image: node:12-alpine
 
 variables:
-  AWS_DEFAULT_REGION: eu-west-1
-  LAMBDA_ARN: arn:aws:lambda:eu-west-1:747351050637:function:jwtAuthorizer
+  CI_SERVERLESS_PROFILE: default
 
-install:
-  stage: install
+cache:
+  key: "$CI_COMMIT_REF_NAME"
+  paths:
+    - node_modules/
+
+stages:
+  - deploy-dev
+  - deploy
+
+before_script:
+  - npm install -g serverless@1.61.0 --no-progress
+  - npm install --no-progress
+
+.deploy:
+  script:
+    - serverless config credentials --provider aws --key ${AWS_ACCESS_KEY_ID} --secret ${AWS_SECRET_ACCESS_KEY}
+    - echo "$STAGE"
+    - serverless deploy --stage=$STAGE --verbose
+
+deploy_sandbox:
+  stage: deploy-dev
+  extends:
+    - .deploy
   only:
     - merge_requests
     - master
-  tags:
-    - docker
-  script:
-    - npm install
-  artifacts:
-    paths:
-      - node_modules
-    expire_in: 1 hour
-
-build:
-  stage: build
-  only:
-    - merge_requests
-    - master
-  tags:
-    - docker
-  dependencies:
-    - install
-  script:
-    - npm run package
-  artifacts:
-    paths:
-      - lambda-authorizer-dist.zip
-    expire_in: 24 hours
-
-deploy_dry_run:
-  stage: deploy
-  only:
-    - merge_requests
-  tags:
-    - docker
-  dependencies:
-    - install
-    - build
-  script:
-    - npm run deploy-dry
+  environment:
+    name: sandbox
 
 deploy_production:
   stage: deploy
+  extends:
+    - .deploy
   only:
     - master
-  tags:
-    - docker
-  dependencies:
-    - install
-    - build
-  script:
-    - npm run deploy
+  when: manual
+  environment:
+    name: production

@@ -46,3 +46,6 @@ node_modules
 event.json
 policyDocument.json
 *.zip
+
+# Serverless directories
+.serverless
