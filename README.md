@@ -11,10 +11,11 @@ The documentation below was trimmed and customized for our particular use case a
 This package gives you the code for a custom authorizer that will perform authorization on AWS API Gateway requests via the following:
 
 - It confirms that an OAuth2 bearer token has been passed via the `Authorization` header.
-- It confirms that the token is a JWT that has been signed using the RS256 algorithm with a specific public key
-- It obtains the public key by inspecting the configuration returned by a configured JWKS endpoint
-- It also ensures that the JWT has the required Issuer (`iss` claim) and Audience (`aud` claim)
-- It also confirms that the JWT has been issued to a Cimpress Employee
+- It confirms that the token is a JWT that has been signed using the RS256 algorithm with a specific public key.
+- It obtains the public key by inspecting the configuration returned by a configured JWKS endpoint.
+- It also ensures that the JWT has the required Issuer (`iss` claim) and Audience (`aud` claim).
+- It also confirms that the JWT has been issued to a Cimpress Employee.
+- It returns an Resource Policy document allowing for the execution of **any API method in any AWS Gateway based  API**. Be careful as you may need authorization of the request in your lambda.
 
 ## Setup
 
