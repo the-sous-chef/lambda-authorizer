@@ -15,7 +15,7 @@ This package gives you the code for a custom authorizer that will perform author
 - It obtains the public key by inspecting the configuration returned by a configured JWKS endpoint.
 - It also ensures that the JWT has the required Issuer (`iss` claim) and Audience (`aud` claim).
 - It also confirms that the JWT has been issued to a Cimpress Employee.
-- It returns an Resource Policy document allowing for the execution of **any API method in any AWS Gateway based  API**. Be careful as you may need authorization of the request in your lambda.
+- It returns an Resource Policy document allowing for the execution of **any API method in any AWS Gateway based API using this authorizer**. Be careful as you may need authorization of the request in your lambda.
 
 ## Setup
 
