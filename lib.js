@@ -19,7 +19,7 @@ const getPolicyDocument = function(effect, resource) {
   const statementOne = {};
   statementOne.Action = "execute-api:Invoke"; // default action
   statementOne.Effect = effect;
-  statementOne.Resource = resource;
+  statementOne.Resource = '*'; // All APIs inside the current account
   policyDocument.Statement[0] = statementOne;
   return policyDocument;
 };
