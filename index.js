@@ -1,16 +1,13 @@
-'use strict';
-
 const lib = require('./lib');
+let data;
 
-// Lambda function index.handler - thin wrapper around lib.authenticate
-module.exports.handler = function (event, context) {
-  lib.authenticate(event, function (err, data) {
-    if (err) {
-      if (!err) {
-        context.fail("Unhandled error");
-      }
-      context.fail("Unauthorized");
-    }
-    else context.succeed(data);
-  });
+module.exports.handler = async (event) => {
+  try {
+    data = await lib.authenticate(event);
+  }
+  catch (err) {
+    console.log(err);
+    return `Unauthorized: ${err.message}`;
+  }
+  return data;
 };

@@ -20,6 +20,7 @@ functions:
       TOKEN_ISSUER: "https://cimpress.auth0.com/"
       JWKS_URI: "https://cimpress.auth0.com/.well-known/jwks.json"
       AUDIENCE: "https://api.cimpress.io/"
+      COAM_URL: "https://api.cimpress.io/auth/access-management"
     tags:
       Cost Center: pct
       Owner: shelley
