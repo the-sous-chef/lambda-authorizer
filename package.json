@@ -8,10 +8,10 @@
   "license": "Apache-2.0",
   "dependencies": {
     "jsonwebtoken": "^8.5.1",
-    "jwks-rsa": "^1.6.0"
+    "jwks-rsa": "^1.7.0"
   },
   "devDependencies": {
-    "aws-sdk": "^2.600.0"
+    "aws-sdk": "^2.656.0"
   },
   "repository": {
     "type": "git",

@@ -3,10 +3,15 @@ const jwt = require('jsonwebtoken');
 const util = require('util');
 const coam = require("./coam")
 
-const validAccounts = [
+const INCLUDE_PERMISSIONS = process.env.INCLUDE_PERMISSIONS;
+
+const internalUsersAccounts = [
   "g2Ez5VaoZWoqU22XqPjTLU", // Cimpress Technology
   "ozoDdrmewShEcbUDWX8J3V" // Vistaprint
 ];
+const webUsersAccounts = [
+  "4HVsAccqLzE6BPbmvrDaKw" // Vistaprint
+]
 
 const client = jwksClient({
   cache: true,
@@ -20,6 +25,17 @@ const client = jwksClient({
 const jwtOptions = {
   audience: process.env.AUDIENCE,
   issuer: process.env.TOKEN_ISSUER
+};
+
+const getResponse = (principalId, effect, resource, scope, permissions) =>{
+  return {
+    principalId,
+    policyDocument: getPolicyDocument(effect, resource),
+    context: {
+      scope,
+      permissions
+    }
+  };
 };
 
 /**
@@ -83,16 +99,14 @@ module.exports.authenticate = async (params) =>{
   try {
     const tokenVerified = await jwt.verify(token, signingKey, jwtOptions);
     const accountClaim = tokenVerified["https://claims.cimpress.io/account"];
-    if (validAccounts.includes(accountClaim)){
-      const userPermissions = await coam.getUserPermissions(token, tokenVerified.sub);
-      return {
-        principalId: tokenVerified.sub,
-        policyDocument: getPolicyDocument('Allow', '*'),
-        context: {
-          scope: tokenVerified.scope,
-          permissions: userPermissions
-        }
+    if (internalUsersAccounts.includes(accountClaim)){
+      let userPermissions = null;
+      if(INCLUDE_PERMISSIONS === "true") {
+        userPermissions = await coam.getUserPermissions(token, tokenVerified.sub);
       }
+      return getResponse(tokenVerified.sub, 'Allow', '*', tokenVerified.scope, userPermissions);
+    }else if(webUsersAccounts.includes(accountClaim)){
+      return getResponse(tokenVerified.sub, 'Allow', '*', tokenVerified.scope, null);
     }
     console.error(
         tokenVerified.sub +

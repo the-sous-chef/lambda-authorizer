@@ -21,13 +21,14 @@ functions:
       JWKS_URI: "https://cimpress.auth0.com/.well-known/jwks.json"
       AUDIENCE: "https://api.cimpress.io/"
       COAM_URL: "https://api.cimpress.io/auth/access-management"
+      INCLUDE_PERMISSIONS: "true"
     tags:
       Cost Center: pct
       Owner: shelley
       Customer: platform
 
 custom:
-  defaultStage: dev
+  defaultStage: dev 
   defaultProfile: ${env:CI_SERVERLESS_PROFILE,'vbu-product-catalog@admin'}
   memorySize:
     dev: 128
@@ -41,3 +42,5 @@ package:
     - "*.md"
     - "event.json*"
     - node_modules/aws-sdk/**
+    - CODEOWNERS
+    - LICENSE

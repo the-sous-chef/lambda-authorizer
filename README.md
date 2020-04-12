@@ -14,8 +14,9 @@ This package gives you the code for a custom authorizer that will perform author
 - It confirms that the token is a JWT that has been signed using the RS256 algorithm with a specific public key.
 - It obtains the public key by inspecting the configuration returned by a configured JWKS endpoint.
 - It also ensures that the JWT has the required Issuer (`iss` claim) and Audience (`aud` claim).
-- It also confirms that the JWT has been issued to a Cimpress Employee.
+- It also confirms that the JWT has been issued to a Cimpress Employee or a Vistaprint Customer. 
 - It returns an Resource Policy document allowing for the execution of **any API method in any AWS Gateway based API using this authorizer**. Be careful as you may need authorization of the request in your lambda.
+- It can return the COAM permission of the user authenticated so the lambda doesn't need to retrieve them each time. 
 
 ## Setup
 
@@ -34,6 +35,7 @@ The following environment variables are needed:
 - `TOKEN_ISSUER`: The issuer of the token. If you're using Auth0 as the token issuer, this would be: `https://your-tenant.auth0.com/`
 - `JWKS_URI`: This is the URL of the associated JWKS endpoint. If you are using Auth0 as the token issuer, this would be: `https://your-tenant.auth0.com/.well-known/jwks.json`
 - `AUDIENCE`: This is the required audience of the token. If you are using Auth0 as the Authorization Server, the audience value is the same thing as your API
+- `INCLUDE_PERMISSIONS`: "true"/"false. To include in the response's context the COAM permissions of the principal authenticated. If this option is used, it is advised to cache the authorizer response.
 
 With a valid token, now you just need to create a local `event.json` file that contains it. Start by copying the sample file:
 
