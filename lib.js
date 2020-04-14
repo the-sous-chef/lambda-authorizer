@@ -33,7 +33,7 @@ const getResponse = (
   effect,
   resource,
   scope,
-  isNotWeb,
+  isInternalUser,
   permissions
 ) => {
   return {
@@ -41,7 +41,7 @@ const getResponse = (
     policyDocument: getPolicyDocument(effect, resource),
     context: {
       scope,
-      isNotWeb,
+      isInternalUser,
       permissions,
     },
   };
