@@ -1,13 +1,11 @@
-const lib = require('./lib');
-let data;
+const lib = require("./lib");
 
-module.exports.handler = async (event) => {
+module.exports.handler = async (event, context) => {
   try {
-    data = await lib.authenticate(event);
+    const data = await lib.authenticate(event);
+    context.succeed(data);
+  } catch (err) {
+    console.error(err);
+    context.fail("Unauthorized");
   }
-  catch (err) {
-    console.log(err);
-    return `Unauthorized: ${err.message}`;
-  }
-  return data;
 };
