@@ -3,8 +3,8 @@ const jwt = require("jsonwebtoken");
 const util = require("util");
 const coam = require("./coam");
 
-const INCLUDE_PERMISSIONS = process.env.INCLUDE_PERMISSIONS;
-const ALLOW_WEB = process.env.ALLOW_WEB;
+const INCLUDE_PERMISSIONS = process.env.INCLUDE_PERMISSIONS === "true";
+const ALLOW_WEB = process.env.ALLOW_WEB === "true";
 
 const internalUsersAccounts = [
   "g2Ez5VaoZWoqU22XqPjTLU", // Cimpress Technology
@@ -114,7 +114,7 @@ module.exports.authenticate = async (params) => {
     const accountClaim = tokenVerified["https://claims.cimpress.io/account"];
     if (internalUsersAccounts.includes(accountClaim)) {
       let userPermissions = null;
-      if (INCLUDE_PERMISSIONS === "true") {
+      if (INCLUDE_PERMISSIONS) {
         userPermissions = await coam.getUserPermissions(
           token,
           tokenVerified.sub
