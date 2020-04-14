@@ -33,7 +33,7 @@ const getResponse = (
   effect,
   resource,
   scope,
-  isWeb,
+  isNotWeb,
   permissions
 ) => {
   return {
@@ -41,7 +41,7 @@ const getResponse = (
     policyDocument: getPolicyDocument(effect, resource),
     context: {
       scope,
-      isWeb,
+      isNotWeb,
       permissions,
     },
   };
@@ -125,7 +125,7 @@ module.exports.authenticate = async (params) => {
         "Allow",
         "*",
         tokenVerified.scope,
-        "false",
+        "true",
         userPermissions
       );
     } else if (ALLOW_WEB && webUsersAccounts.includes(accountClaim)) {
@@ -134,7 +134,7 @@ module.exports.authenticate = async (params) => {
         "Allow",
         "*",
         tokenVerified.scope,
-        "true",
+        "false",
         null
       );
     }
