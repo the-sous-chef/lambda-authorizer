@@ -1,17 +1,18 @@
-const jwksClient = require('jwks-rsa');
-const jwt = require('jsonwebtoken');
-const util = require('util');
-const coam = require("./coam")
+const jwksClient = require("jwks-rsa");
+const jwt = require("jsonwebtoken");
+const util = require("util");
+const coam = require("./coam");
 
 const INCLUDE_PERMISSIONS = process.env.INCLUDE_PERMISSIONS;
+const ALLOW_WEB = process.env.ALLOW_WEB;
 
 const internalUsersAccounts = [
   "g2Ez5VaoZWoqU22XqPjTLU", // Cimpress Technology
-  "ozoDdrmewShEcbUDWX8J3V" // Vistaprint
+  "ozoDdrmewShEcbUDWX8J3V", // Vistaprint
 ];
 const webUsersAccounts = [
-  "4HVsAccqLzE6BPbmvrDaKw" // Vistaprint
-]
+  "4HVsAccqLzE6BPbmvrDaKw", // Vistaprint
+];
 
 const client = jwksClient({
   cache: true,
@@ -19,22 +20,30 @@ const client = jwksClient({
   rateLimit: true,
   jwksRequestsPerMinute: 10,
   strictSsl: true,
-  jwksUri: process.env.JWKS_URI
+  jwksUri: process.env.JWKS_URI,
 });
 
 const jwtOptions = {
   audience: process.env.AUDIENCE,
-  issuer: process.env.TOKEN_ISSUER
+  issuer: process.env.TOKEN_ISSUER,
 };
 
-const getResponse = (principalId, effect, resource, scope, permissions) =>{
+const getResponse = (
+  principalId,
+  effect,
+  resource,
+  scope,
+  isWeb,
+  permissions
+) => {
   return {
     principalId,
     policyDocument: getPolicyDocument(effect, resource),
     context: {
       scope,
-      permissions
-    }
+      isWeb,
+      permissions,
+    },
   };
 };
 
@@ -46,15 +55,17 @@ const getResponse = (principalId, effect, resource, scope, permissions) =>{
  */
 const getPolicyDocument = (effect, resource) => {
   const policyDocument = {
-    Version: '2012-10-17', // default version
-    Statement: [{
-      Action: 'execute-api:Invoke', // default action
-      Effect: effect,
-      Resource: resource,
-    }]
+    Version: "2012-10-17", // default version
+    Statement: [
+      {
+        Action: "execute-api:Invoke", // default action
+        Effect: effect,
+        Resource: resource,
+      },
+    ],
   };
   return policyDocument;
-}
+};
 
 /**
  * Extracts the token from the authorization header
@@ -62,7 +73,7 @@ const getPolicyDocument = (effect, resource) => {
  * @returns {string} Token
  */
 const getToken = (params) => {
-  if (!params.type || params.type !== 'TOKEN') {
+  if (!params.type || params.type !== "TOKEN") {
     throw new Error('Expected "event.type" parameter to have value "TOKEN"');
   }
 
@@ -73,10 +84,12 @@ const getToken = (params) => {
 
   const match = tokenString.match(/^Bearer (.*)$/);
   if (!match || match.length < 2) {
-    throw new Error(`Invalid Authorization token - ${tokenString} does not match "Bearer .*"`);
+    throw new Error(
+      `Invalid Authorization token - ${tokenString} does not match "Bearer .*"`
+    );
   }
   return match[1];
-}
+};
 
 /**
  *
@@ -85,12 +98,12 @@ const getToken = (params) => {
  * defined in the token. The COAM permissions of the user are included in the context. They can be accessed as a string
  * in the 'event.requestContext.authorizer.permissions' object in the authorized lambda.
  */
-module.exports.authenticate = async (params) =>{
+module.exports.authenticate = async (params) => {
   const token = getToken(params);
 
   const decoded = jwt.decode(token, { complete: true });
   if (!decoded || !decoded.header || !decoded.header.kid) {
-    throw new Error('Invalid token. Could not decode JWT.');
+    throw new Error("Invalid token. Could not decode JWT.");
   }
 
   const getSigningKey = util.promisify(client.getSigningKey);
@@ -99,20 +112,37 @@ module.exports.authenticate = async (params) =>{
   try {
     const tokenVerified = await jwt.verify(token, signingKey, jwtOptions);
     const accountClaim = tokenVerified["https://claims.cimpress.io/account"];
-    if (internalUsersAccounts.includes(accountClaim)){
+    if (internalUsersAccounts.includes(accountClaim)) {
       let userPermissions = null;
-      if(INCLUDE_PERMISSIONS === "true") {
-        userPermissions = await coam.getUserPermissions(token, tokenVerified.sub);
+      if (INCLUDE_PERMISSIONS === "true") {
+        userPermissions = await coam.getUserPermissions(
+          token,
+          tokenVerified.sub
+        );
       }
-      return getResponse(tokenVerified.sub, 'Allow', '*', tokenVerified.scope, userPermissions);
-    }else if(webUsersAccounts.includes(accountClaim)){
-      return getResponse(tokenVerified.sub, 'Allow', '*', tokenVerified.scope, null);
+      return getResponse(
+        tokenVerified.sub,
+        "Allow",
+        "*",
+        tokenVerified.scope,
+        "false",
+        userPermissions
+      );
+    } else if (ALLOW_WEB && webUsersAccounts.includes(accountClaim)) {
+      return getResponse(
+        tokenVerified.sub,
+        "Allow",
+        "*",
+        tokenVerified.scope,
+        "true",
+        null
+      );
     }
     console.error(
-        tokenVerified.sub +
+      tokenVerified.sub +
         " is not authorized to access this endpoint as they are not a Cimpress User."
     );
-  }catch(error){
+  } catch (error) {
     console.error(error);
   }
   throw new Error("Unauthorized");
