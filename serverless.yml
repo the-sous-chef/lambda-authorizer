@@ -22,7 +22,7 @@ functions:
       AUDIENCE: "https://api.cimpress.io/"
       COAM_URL: "https://api.cimpress.io/auth/access-management"
       INCLUDE_PERMISSIONS: "true"
-      ALLOW_WEB: "false"
+      ALLOW_WEB: "true"
     tags:
       Cost Center: pct
       Owner: shelley
