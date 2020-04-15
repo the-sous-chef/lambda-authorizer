@@ -16,7 +16,7 @@ This package gives you the code for a custom authorizer that will perform author
 - It also ensures that the JWT has the required Issuer (`iss` claim) and Audience (`aud` claim).
 - It also confirms that the JWT has been issued to a Cimpress Employee or a Vistaprint Customer. 
 - It returns an Resource Policy document allowing for the execution of **any API method in any AWS Gateway based API using this authorizer**. Be careful as you may need authorization of the request in your lambda.
-- It can return the COAM permission of the user authenticated so the lambda doesn't need to retrieve them each time. 
+- It can return the COAM permission of the user authenticated, so the lambda doesn't need to retrieve them each time. 
 
 ## Setup
 
@@ -36,6 +36,7 @@ The following environment variables are needed:
 - `JWKS_URI`: This is the URL of the associated JWKS endpoint. If you are using Auth0 as the token issuer, this would be: `https://your-tenant.auth0.com/.well-known/jwks.json`
 - `AUDIENCE`: This is the required audience of the token. If you are using Auth0 as the Authorization Server, the audience value is the same thing as your API
 - `INCLUDE_PERMISSIONS`: "true"/"false. To include in the response's context the COAM permissions of the principal authenticated. If this option is used, it is advised to cache the authorizer response.
+- `ALLOW_WEB`: "true"/"false". To validate also web customers or only internal Cimpress users.
 
 With a valid token, now you just need to create a local `event.json` file that contains it. Start by copying the sample file:
 
@@ -84,10 +85,9 @@ To create the lambda bundle, run the following command:
 
 # How to use it
 
-Create a custom authorizer under the `API Gateway > Resources` desired method pointing to this lambda and using the `Authorization` header.
+## Configuration
 
-If your are using `Serverless.com` you need to add the `authorizer`section and ARN of this lambda to the http event configuration of the desired function:
-
+If you are using `Serverless.com` you need to add the `authorizer` section and ARN of this lambda to the HTTP event configuration of the desired function:
 ```
 path: api/private
   method: get
@@ -95,6 +95,59 @@ path: api/private
     arn: arn:aws:lambda:eu-west-1:938096484345:function:jwt-authorizer-prod-authorize
 ```
 
+## Access context data 
+The additional information can is accessible through the `requestContext` in the incoming event for the lambda.
+### Internal user or web customer
+`event.requestContext.authorizer.isInternalUser` is a string that tells, based on the account in the JWT token, the type of user.
+* "true", for internal user
+* "false", for web customer
+
+### Permissions
+`event.requestContext.authorizer.permissions` is a string that contains a _stringified_ version of a JSON object with the different COAM permissions.
+```json
+{
+    "resource_type_1":[
+       {
+           "identifier": "*",
+           "permissions":[
+                   "perm1",
+                   "perm2"
+           ]
+       },
+       {
+          "identifier": "A",
+          "permissions":[
+                  "perm10",
+                  "perm20"
+          ]
+      },
+    ],`
+    "resource_type_2":[
+       {
+           "identifier": "*",
+           "permissions":[
+                   "perm111",
+                   "perm222"
+           ]
+       }
+     ]
+}
+```
+To read those values, you could something like that:
+```javascript
+const getPermissions = (event, resourceType, resourceIdentifier) => {
+  if ('permissions' in event.requestContext.authorizer) {
+    const perms = JSON.parse(event.requestContext.authorizer.permissions);
+    if (perms && resourceType in perms) {
+      const resourcePermissions = perms.offer_placement.find(
+        x => x.identifier === resourceIdentifier
+      );
+      return resourcePermissions ? resourcePermissions.permissions : [];
+    }
+  }
+  return [];
+};
+```
 ## License
 
 This project is licensed under the MIT license. See the [LICENSE](LICENSE.txt) file for more info.
