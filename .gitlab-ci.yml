@@ -1,7 +1,7 @@
 image: node:12-alpine
 
 variables:
-  CI_SERVERLESS_PROFILE: default
+  CI_SERVERLESS_PROFILE: ''
 
 cache:
   key: "$CI_COMMIT_REF_NAME"
@@ -12,13 +12,13 @@ stages:
   - deploy-dev
   - deploy
 
-before_script:
-  - npm install -g serverless@1.61.0 --no-progress
-  - npm install --no-progress
-
 .deploy:
+  extends:
+    - .setup-aws-credentials
+  before_script:
+    - npm install -g serverless@1.61.0 --no-progress
+    - npm install --no-progress
   script:
-    - serverless config credentials --provider aws --key ${AWS_ACCESS_KEY_ID} --secret ${AWS_SECRET_ACCESS_KEY}
     - echo "$STAGE"
     - serverless deploy --stage=$STAGE --verbose
 
@@ -41,3 +41,8 @@ deploy_production:
   when: manual
   environment:
     name: production
+
+include:
+  - project: 'vistaprint-org/product-catalog/pipeline-templates'
+    ref: 'master'
+    file: 'setup-aws-credentials.yaml'
