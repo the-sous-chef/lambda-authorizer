@@ -8,6 +8,7 @@ provider:
   region: ${opt:region, 'eu-west-1'}
   memorySize: ${self:custom.memorySize.${self:provider.stage}}
   description: Lambda for enabling custom authorization using Cimpress Auth0.
+  logRetentionInDays: ${self:custom.logRetentionInDays.${self:provider.stage}}
   endpointType: edge
   iamManagedPolicies:
     - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
@@ -34,6 +35,9 @@ custom:
   memorySize:
     dev: 128
     prod: 128
+  logRetentionInDays:
+    dev: 7
+    prod: 30
 
 package:
   exclude:
