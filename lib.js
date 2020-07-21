@@ -34,6 +34,7 @@ const getResponse = (
     resource,
     scope,
     isInternalUser,
+    isAnonymous,
     permissions
 ) => {
     return {
@@ -42,6 +43,7 @@ const getResponse = (
         context: {
             scope,
             isInternalUser,
+            isAnonymous,
             permissions,
         },
     };
@@ -126,6 +128,7 @@ module.exports.authenticate = async (params) => {
                 "*",
                 tokenVerified.scope,
                 "true",
+                "false",
                 userPermissions
             );
         } else if (ALLOW_WEB && webUsersAccounts.includes(accountClaim)) {
@@ -136,6 +139,7 @@ module.exports.authenticate = async (params) => {
                 "*",
                 tokenVerified.scope,
                 "false",
+                isAnonymous,
                 null
             );
         }
