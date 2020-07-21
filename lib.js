@@ -131,7 +131,7 @@ module.exports.authenticate = async (params) => {
         } else if (ALLOW_WEB && webUsersAccounts.includes(accountClaim)) {
             const isAnonymous = tokenVerified["https://claims.cimpress.io/is_anonymous"] || false;
             return getResponse(
-                isAnonymous ? tokenVerified["https://claims.cimpress.io/canonical_id"] : tokenVerified.sub,
+                tokenVerified["https://claims.cimpress.io/canonical_id"],
                 "Allow",
                 "*",
                 tokenVerified.scope,
