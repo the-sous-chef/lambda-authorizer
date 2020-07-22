@@ -7,44 +7,46 @@ const INCLUDE_PERMISSIONS = process.env.INCLUDE_PERMISSIONS === "true";
 const ALLOW_WEB = process.env.ALLOW_WEB === "true";
 
 const internalUsersAccounts = [
-  "g2Ez5VaoZWoqU22XqPjTLU", // Cimpress Technology
-  "ozoDdrmewShEcbUDWX8J3V", // Vistaprint
+    "g2Ez5VaoZWoqU22XqPjTLU", // Cimpress Technology
+    "ozoDdrmewShEcbUDWX8J3V", // Vistaprint
 ];
 const webUsersAccounts = [
-  "4HVsAccqLzE6BPbmvrDaKw", // Vistaprint
+    "4HVsAccqLzE6BPbmvrDaKw", // Vistaprint
 ];
 
 const client = jwksClient({
-  cache: true,
-  cacheMaxAge: 86400000, //value in ms
-  rateLimit: true,
-  jwksRequestsPerMinute: 10,
-  strictSsl: true,
-  jwksUri: process.env.JWKS_URI,
+    cache: true,
+    cacheMaxAge: 86400000, //value in ms
+    rateLimit: true,
+    jwksRequestsPerMinute: 10,
+    strictSsl: true,
+    jwksUri: process.env.JWKS_URI,
 });
 
 const jwtOptions = {
-  audience: process.env.AUDIENCE,
-  issuer: process.env.TOKEN_ISSUER,
+    audience: process.env.AUDIENCE,
+    issuer: process.env.TOKEN_ISSUER,
 };
 
 const getResponse = (
-  principalId,
-  effect,
-  resource,
-  scope,
-  isInternalUser,
-  permissions
-) => {
-  return {
     principalId,
-    policyDocument: getPolicyDocument(effect, resource),
-    context: {
-      scope,
-      isInternalUser,
-      permissions,
-    },
-  };
+    effect,
+    resource,
+    scope,
+    isInternalUser,
+    isAnonymous,
+    permissions
+) => {
+    return {
+        principalId,
+        policyDocument: getPolicyDocument(effect, resource),
+        context: {
+            scope,
+            isInternalUser,
+            isAnonymous,
+            permissions,
+        },
+    };
 };
 
 /**
@@ -54,17 +56,17 @@ const getResponse = (
  * @returns {{Version: string, Statement: [{Action: string, Resource: *, Effect: *}]}}
  */
 const getPolicyDocument = (effect, resource) => {
-  const policyDocument = {
-    Version: "2012-10-17", // default version
-    Statement: [
-      {
-        Action: "execute-api:Invoke", // default action
-        Effect: effect,
-        Resource: resource,
-      },
-    ],
-  };
-  return policyDocument;
+    const policyDocument = {
+        Version: "2012-10-17", // default version
+        Statement: [
+            {
+                Action: "execute-api:Invoke", // default action
+                Effect: effect,
+                Resource: resource,
+            },
+        ],
+    };
+    return policyDocument;
 };
 
 /**
@@ -73,22 +75,22 @@ const getPolicyDocument = (effect, resource) => {
  * @returns {string} Token
  */
 const getToken = (params) => {
-  if (!params.type || params.type !== "TOKEN") {
-    throw new Error('Expected "event.type" parameter to have value "TOKEN"');
-  }
+    if (!params.type || params.type !== "TOKEN") {
+        throw new Error('Expected "event.type" parameter to have value "TOKEN"');
+    }
 
-  const tokenString = params.authorizationToken;
-  if (!tokenString) {
-    throw new Error('Expected "event.authorizationToken" parameter to be set');
-  }
+    const tokenString = params.authorizationToken;
+    if (!tokenString) {
+        throw new Error('Expected "event.authorizationToken" parameter to be set');
+    }
 
-  const match = tokenString.match(/^Bearer (.*)$/);
-  if (!match || match.length < 2) {
-    throw new Error(
-      `Invalid Authorization token - ${tokenString} does not match "Bearer .*"`
-    );
-  }
-  return match[1];
+    const match = tokenString.match(/^Bearer (.*)$/);
+    if (!match || match.length < 2) {
+        throw new Error(
+            `Invalid Authorization token - ${tokenString} does not match "Bearer .*"`
+        );
+    }
+    return match[1];
 };
 
 /**
@@ -99,51 +101,54 @@ const getToken = (params) => {
  * in the 'event.requestContext.authorizer.permissions' object in the authorized lambda.
  */
 module.exports.authenticate = async (params) => {
-  const token = getToken(params);
+    const token = getToken(params);
 
-  const decoded = jwt.decode(token, { complete: true });
-  if (!decoded || !decoded.header || !decoded.header.kid) {
-    throw new Error("Invalid token. Could not decode JWT.");
-  }
-
-  const getSigningKey = util.promisify(client.getSigningKey);
-  const key = await getSigningKey(decoded.header.kid);
-  const signingKey = key.publicKey || key.rsaPublicKey;
-  try {
-    const tokenVerified = await jwt.verify(token, signingKey, jwtOptions);
-    const accountClaim = tokenVerified["https://claims.cimpress.io/account"];
-    if (internalUsersAccounts.includes(accountClaim)) {
-      let userPermissions = null;
-      if (INCLUDE_PERMISSIONS) {
-        userPermissions = await coam.getUserPermissions(
-          token,
-          tokenVerified.sub
-        );
-      }
-      return getResponse(
-        tokenVerified.sub,
-        "Allow",
-        "*",
-        tokenVerified.scope,
-        "true",
-        userPermissions
-      );
-    } else if (ALLOW_WEB && webUsersAccounts.includes(accountClaim)) {
-      return getResponse(
-        tokenVerified.sub,
-        "Allow",
-        "*",
-        tokenVerified.scope,
-        "false",
-        null
-      );
+    const decoded = jwt.decode(token, {complete: true});
+    if (!decoded || !decoded.header || !decoded.header.kid) {
+        throw new Error("Invalid token. Could not decode JWT.");
     }
-    console.error(
-      tokenVerified.sub +
-        " is not authorized to access this endpoint as they are not a Cimpress User."
-    );
-  } catch (error) {
-    console.error(error);
-  }
-  throw new Error("Unauthorized");
+
+    const getSigningKey = util.promisify(client.getSigningKey);
+    const key = await getSigningKey(decoded.header.kid);
+    const signingKey = key.publicKey || key.rsaPublicKey;
+    try {
+        const tokenVerified = await jwt.verify(token, signingKey, jwtOptions);
+        const accountClaim = tokenVerified["https://claims.cimpress.io/account"];
+        if (internalUsersAccounts.includes(accountClaim)) {
+            let userPermissions = null;
+            if (INCLUDE_PERMISSIONS) {
+                userPermissions = await coam.getUserPermissions(
+                    token,
+                    tokenVerified.sub
+                );
+            }
+            return getResponse(
+                tokenVerified.sub,
+                "Allow",
+                "*",
+                tokenVerified.scope,
+                "true",
+                "false",
+                userPermissions
+            );
+        } else if (ALLOW_WEB && webUsersAccounts.includes(accountClaim)) {
+            const isAnonymous = tokenVerified["https://claims.cimpress.io/is_anonymous"] || false;
+            return getResponse(
+                tokenVerified["https://claims.cimpress.io/canonical_id"],
+                "Allow",
+                "*",
+                tokenVerified.scope,
+                "false",
+                isAnonymous,
+                null
+            );
+        }
+        console.error(
+            tokenVerified.sub +
+            " is not authorized to access this endpoint as they are not a Cimpress User."
+        );
+    } catch (error) {
+        console.error(error);
+    }
+    throw new Error("Unauthorized");
 };
