@@ -1,51 +1,96 @@
-service: jwt-authorizer
+service: auth0-custom-authorizer
 
-provider:
-  name: aws
-  runtime: nodejs12.x
-  stage: ${opt:stage, self:custom.defaultStage}
-  profile: ${opt:profile, self:custom.defaultProfile}
-  region: ${opt:region, 'eu-west-1'}
-  memorySize: ${self:custom.memorySize.${self:provider.stage}}
-  description: Lambda for enabling custom authorization using Cimpress Auth0.
-  logRetentionInDays: ${self:custom.logRetentionInDays.${self:provider.stage}}
-  endpointType: edge
-  iamManagedPolicies:
-    - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+useDotenv: true
 
-functions:
-  authorize:
-    handler: index.handler
-    description: Receives a token an validate it against cimpress Auth0
-    environment:
-      TOKEN_ISSUER: "https://cimpress.auth0.com/"
-      JWKS_URI: "https://cimpress.auth0.com/.well-known/jwks.json"
-      AUDIENCE: "https://api.cimpress.io/"
-      COAM_URL: "https://api.cimpress.io/auth/access-management"
-      INCLUDE_PERMISSIONS: "true"
-      ALLOW_WEB: "true"
-    tags:
-      Cost Center: pct
-      Owner: shelley
-      Customer: platform
+package:
+  individually: true
+
+plugins:
+  - serverless-bundle
+  - serverless-offline
 
 custom:
-  defaultStage: dev
-  defaultProfile: ${env:CI_SERVERLESS_PROFILE,'vbu-product-catalog@admin'}
-  memorySize:
-    dev: 128
-    prod: 128
+  endpointType: regional
+  profile: ${opt:profile, 'souschef'}
+  region: ${opt:region, 'us-east-1'}
+  stage: ${opt:stage, env:STAGE, 'dev'}
   logRetentionInDays:
     dev: 7
     prod: 30
+  memorySize:
+    dev: 128
+    prod: 128
+  provisionedConcurrency:
+    dev: 1
+    prod: 
+  timeout:
+    dev: 6
+    prod: 12
 
-package:
-  exclude:
-    - tests/**
-    - coverage/**
-    - performance.yml
-    - "*.md"
-    - "event.json*"
-    - node_modules/aws-sdk/**
-    - CODEOWNERS
-    - LICENSE
+provider:
+  name: aws
+  description: Lambda custom authorizer for Auth0 IAM provider
+  endpointType: ${self:custom.endpointType}
+  lambdaHashingVersion: 20201221
+  logRetentionInDays: ${self:custom.logRetentionInDays.${self:custom.stage}}
+  memorySize: ${self:custom.memorySize.${self:custom.stage}}
+  profile: ${self:custom.profile}
+  region: ${self:custom.region}
+  runtime: nodejs14.x
+  stage: ${self:custom.stage}
+  timeout: ${self:custom.timeout.${self:custom.stage}}
+  environment:
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
+  iamManagedPolicies:
+    - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+  tags:
+    service: ${self:service}
+    stage: ${self:custom.stage}
+  tracing:
+    lambda: true
+  vpc:
+    securityGroupIds:
+      - sg-0231973009b21b8e9
+    subnetIds:
+      - subnet-0a5c738bc43fbb1d7
+      - subnet-02c70bb2c910e23c7
+      - subnet-0e3947b76b5712e13
+
+functions:
+  authorize:
+    handler: handler.main
+    module: src/functions/authorize
+    description: Receives a token and validates it against Auth0 IAM provider
+    name: ${self:custom.stage}-authorize
+    provisionedConcurrency: ${self:custom.provisionedConcurrency.${self:custom.stage}}
+    environment:
+      AUTH0_CLIENT_ID: ${env:AUTH0_CLIENT_ID}
+      AUTH0_CLIENT_PUBLIC_KEY: ${env:AUTH0_CLIENT_PUBLIC_KEY}
+      AUTH0_DOMAIN: ${env:AUTH0_DOMAIN}
+    tags:
+      service: ${self:service}
+      stage: ${self:custom.stage}
+
+resources:
+  Resources:
+    # This response is needed for custom authorizer failures cors support ¯\_(ツ)_/¯
+    GatewayResponse:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: EXPIRED_TOKEN
+        RestApiId:
+          Ref: 'ApiGatewayRestApi'
+        StatusCode: '401'
+    AuthFailureGatewayResponse:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: UNAUTHORIZED
+        RestApiId:
+          Ref: 'ApiGatewayRestApi'
+        StatusCode: '401'

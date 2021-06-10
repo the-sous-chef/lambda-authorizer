@@ -1,0 +1,6 @@
+assets/**
+coverage/**
+dist/**
+node_modules/**
+terraform/**
+jest.config.js
