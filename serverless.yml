@@ -13,23 +13,22 @@ custom:
   endpointType: regional
   profile: ${opt:profile, 'souschef'}
   region: ${opt:region, 'us-east-1'}
-  stage: ${opt:stage, env:STAGE, 'dev'}
+  stage: ${opt:stage, env:STAGE, 'development'}
   logRetentionInDays:
-    dev: 7
-    prod: 30
+    development: 7
+    production: 30
   memorySize:
-    dev: 128
-    prod: 128
+    development: 128
+    production: 128
   provisionedConcurrency:
-    dev: 1
-    prod: 
+    development: 1
+    production: 
   timeout:
-    dev: 6
-    prod: 12
+    development: 6
+    production: 12
 
 provider:
   name: aws
-  description: Lambda custom authorizer for Auth0 IAM provider
   endpointType: ${self:custom.endpointType}
   lambdaHashingVersion: 20201221
   logRetentionInDays: ${self:custom.logRetentionInDays.${self:custom.stage}}
@@ -58,8 +57,7 @@ provider:
 
 functions:
   authorize:
-    handler: handler.main
-    module: src/functions/authorize
+    handler: src/handler.main
     description: Receives a token and validates it against Auth0 IAM provider
     name: ${self:custom.stage}-authorize
     provisionedConcurrency: ${self:custom.provisionedConcurrency.${self:custom.stage}}
