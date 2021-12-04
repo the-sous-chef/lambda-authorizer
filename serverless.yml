@@ -1,19 +1,25 @@
 service: auth0-custom-authorizer
 
 useDotenv: true
+variablesResolutionMode: 20210326
 
 package:
   individually: true
 
 plugins:
-  - serverless-bundle
-  - serverless-offline
+  - serverless-plugin-typescript
+  # - serverless-plugin-thundra
+  - serverless-localstack
 
 custom:
   endpointType: regional
-  profile: ${opt:profile, 'souschef'}
   region: ${opt:region, 'us-east-1'}
-  stage: ${opt:stage, env:STAGE, 'development'}
+  stage: ${opt:stage, env:NODE_ENV, 'development'}
+  localstack:
+    edgePort: 4566
+    host: ${env:LOCALSTACK_HOSTNAME, 'https://localhost'}
+    stages:
+      - development
   logRetentionInDays:
     development: 7
     production: 30
@@ -24,8 +30,8 @@ custom:
     development: 1
     production: 
   timeout:
-    development: 6
-    production: 12
+    development: 900
+    production: 6
 
 provider:
   name: aws
@@ -33,15 +39,20 @@ provider:
   lambdaHashingVersion: 20201221
   logRetentionInDays: ${self:custom.logRetentionInDays.${self:custom.stage}}
   memorySize: ${self:custom.memorySize.${self:custom.stage}}
-  profile: ${self:custom.profile}
+  profile: 'souschef'
   region: ${self:custom.region}
   runtime: nodejs14.x
   stage: ${self:custom.stage}
   timeout: ${self:custom.timeout.${self:custom.stage}}
   environment:
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
-  iamManagedPolicies:
-    - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+    thundra_agent_lambda_debugger_enable: true
+    thundra_agent_lambda_debugger_auth_token: iQnwINa28Vq351P5G815kPdqDxjsnoE4qjLQI6eet/o=
+    thundra_apiKey: 52537f73-4e59-4e74-85cf-6518077b731e
+  iam:
+    role:
+      managedPolicies:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
   tags:
     service: ${self:service}
     stage: ${self:custom.stage}

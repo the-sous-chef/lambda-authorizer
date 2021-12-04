@@ -1,4 +1,4 @@
-image: node:12-alpine
+image: node:current-buster-slim
 
 variables:
   CI_SERVERLESS_PROFILE: ''
@@ -19,8 +19,7 @@ stages:
     - npm install -g serverless@1.61.0 --no-progress
     - npm install --no-progress
   script:
-    - echo "$STAGE"
-    - serverless deploy --stage=$STAGE --verbose
+    - serverless deploy --verbose
 
 deploy_sandbox:
   stage: deploy-dev
@@ -31,6 +30,7 @@ deploy_sandbox:
     - master
   environment:
     name: sandbox
+    NODE_ENV: development  
 
 deploy_production:
   stage: deploy
@@ -41,8 +41,9 @@ deploy_production:
   when: manual
   environment:
     name: production
+    NODE_ENV: production
 
-include:
-  - project: 'vistaprint-org/product-catalog/pipeline-templates'
-    ref: 'master'
-    file: 'setup-aws-credentials.yaml'
+# include:
+#   - project: 'vistaprint-org/product-catalog/pipeline-templates'
+#     ref: 'master'
+#     file: 'setup-aws-credentials.yaml'
