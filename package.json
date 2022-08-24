@@ -55,5 +55,8 @@
     "authentication",
     "lambda"
   ],
-  "homepage": ""
+  "homepage": "",
+  "volta": {
+    "node": "18.7.0"
+  }
 }
