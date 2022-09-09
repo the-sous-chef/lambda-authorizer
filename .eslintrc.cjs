@@ -1,16 +1,19 @@
+const path = require('path');
+
 module.exports = {
+    root: true,
     env: {
-        browser: true,
-        'jest/globals': true,
+        node: true,
+        es2022: true,
     },
     extends: [
-        'airbnb',
+        'airbnb-base',
         'plugin:@typescript-eslint/recommended',
         'plugin:import/errors',
         'plugin:import/warnings',
         'plugin:import/typescript',
     ],
-    ignorePatterns: ['.eslintrc.js'],
+    ignorePatterns: ['.eslintrc.cjs'],
     overrides: [
         {
             files: ['*.spec.ts'],
@@ -24,7 +27,7 @@ module.exports = {
             },
         }, {
             // enable the rule specifically for TypeScript files
-            files: ['*.ts', '*.tsx'],
+            files: ['*.ts'],
             rules: {
                 '@typescript-eslint/explicit-function-return-type': ['error'],
             },
@@ -38,16 +41,13 @@ module.exports = {
     parser: '@typescript-eslint/parser',
     parserOptions: {
         tsconfigRootDir: __dirname,
-        ecmaVersion: 11,
-        ecmaFeatures: {},
-        project: './tsconfig.dev.json',
+        ecmaVersion: 13,
+        project: path.resolve(__dirname, 'tsconfig.json'),
         sourceType: 'module',
     },
     plugins: [
         '@typescript-eslint',
         'import',
-        'jest',
-        'react',
     ],
     rules: {
         'class-methods-use-this': 'off',
@@ -57,14 +57,7 @@ module.exports = {
             ts: 'never',
         }],
         'import/no-default-export': 'error',
-        'import/no-extraneous-dependencies': ['error', {
-            devDependencies: [
-                'jest/**',
-                'src/**/__tests__/**',
-                'webpack.config.js',
-            ],
-        }],
-        'import/no-unresolved': 'off',
+        'import/no-extraneous-dependencies': ['error', { devDependencies: true, packageDir: __dirname }],
         'import/prefer-default-export': 'off',
         indent: 'off',
         // Override airbnb's max line length rule to:
@@ -108,7 +101,6 @@ module.exports = {
             SwitchCase: 1,
             VariableDeclarator: 1,
             outerIIFEBody: 1,
-            // MemberExpression: null,
             FunctionDeclaration: {
                 parameters: 1,
                 body: 1,
@@ -124,8 +116,6 @@ module.exports = {
             ObjectExpression: 1,
             ImportDeclaration: 1,
             flatTernaryExpressions: false,
-            // list derived from https://github.com/benjamn/ast-types/blob/HEAD/def/jsx.js
-            ignoredNodes: [],
             ignoreComments: false,
         }],
         '@typescript-eslint/no-shadow': ['error'],
@@ -144,21 +134,12 @@ module.exports = {
     },
     settings: {
         'import/parsers': {
-            '@typescript-eslint/parser': [
-                '.ts',
-                '.tsx',
-            ],
+            '@typescript-eslint/parser': ['.ts'],
         },
-        'import/extensions': [
-            '.js',
-            '.jsx',
-            '.mjs',
-            '.ts',
-            '.txs',
-        ],
         'import/resolver': {
             typescript: {
                 alwaysTryTypes: true,
+                project: path.resolve(__dirname, 'tsconfig.json'),
             },
         },
     },
