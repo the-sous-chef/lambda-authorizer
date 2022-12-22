@@ -18,7 +18,7 @@
     "@thundra/core": "^2.12.19",
     "debug": "^4.3.2",
     "http-errors": "^1.8.0",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "jwks-rsa": "^2.0.4"
   },
   "devDependencies": {
