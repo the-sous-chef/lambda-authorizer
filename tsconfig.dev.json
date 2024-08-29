@@ -1,7 +1,7 @@
 {
-    "extends": "./tsconfig",
-    "compilerOptions": {
-        "diagnostics": true,
-        "extendedDiagnostics": true
-    },
+  "extends": "./tsconfig",
+  "compilerOptions": {
+    "diagnostics": true,
+    "extendedDiagnostics": true
+  }
 }

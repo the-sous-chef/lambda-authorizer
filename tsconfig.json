@@ -9,9 +9,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "paths": {
-      "@libs/*": [
-        "src/libs/*"
-      ]
+      "@libs/*": ["src/libs/*"]
     },
     "removeComments": true,
     "resolveJsonModule": true,

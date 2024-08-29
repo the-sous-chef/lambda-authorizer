@@ -7,12 +7,10 @@ package:
   individually: true
 
 plugins:
-  - serverless-plugin-typescript
-  # - serverless-plugin-thundra
   - serverless-localstack
 
 custom:
-  endpointType: regional
+  endpointType: REGIONAL
   region: ${opt:region, 'us-east-1'}
   stage: ${opt:stage, env:NODE_ENV, 'development'}
   localstack:
@@ -28,7 +26,7 @@ custom:
     production: 128
   provisionedConcurrency:
     development: 1
-    production: 
+    production:
   timeout:
     development: 900
     production: 6
@@ -39,13 +37,13 @@ provider:
   lambdaHashingVersion: 20201221
   logRetentionInDays: ${self:custom.logRetentionInDays.${self:custom.stage}}
   memorySize: ${self:custom.memorySize.${self:custom.stage}}
-  profile: 'souschef'
+  profile: "souschef"
   region: ${self:custom.region}
   runtime: nodejs14.x
   stage: ${self:custom.stage}
   timeout: ${self:custom.timeout.${self:custom.stage}}
   environment:
-    AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1"
     thundra_agent_lambda_debugger_enable: true
     thundra_agent_lambda_debugger_auth_token: iQnwINa28Vq351P5G815kPdqDxjsnoE4qjLQI6eet/o=
     thundra_apiKey: 52537f73-4e59-4e74-85cf-6518077b731e
@@ -57,6 +55,7 @@ provider:
     service: ${self:service}
     stage: ${self:custom.stage}
   tracing:
+    apiGateway: false
     lambda: true
   vpc:
     securityGroupIds:
@@ -84,22 +83,22 @@ resources:
   Resources:
     # This response is needed for custom authorizer failures cors support ¯\_(ツ)_/¯
     GatewayResponse:
-      Type: 'AWS::ApiGateway::GatewayResponse'
+      Type: "AWS::ApiGateway::GatewayResponse"
       Properties:
         ResponseParameters:
           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
         ResponseType: EXPIRED_TOKEN
         RestApiId:
-          Ref: 'ApiGatewayRestApi'
-        StatusCode: '401'
+          Ref: "ApiGatewayRestApi"
+        StatusCode: "401"
     AuthFailureGatewayResponse:
-      Type: 'AWS::ApiGateway::GatewayResponse'
+      Type: "AWS::ApiGateway::GatewayResponse"
       Properties:
         ResponseParameters:
           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
         ResponseType: UNAUTHORIZED
         RestApiId:
-          Ref: 'ApiGatewayRestApi'
-        StatusCode: '401'
+          Ref: "ApiGatewayRestApi"
+        StatusCode: "401"

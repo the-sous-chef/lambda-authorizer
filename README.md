@@ -14,9 +14,9 @@ This package gives you the code for a custom authorizer that will perform author
 - It confirms that the token is a JWT that has been signed using the RS256 algorithm with a specific public key.
 - It obtains the public key by inspecting the configuration returned by a configured JWKS endpoint.
 - It also ensures that the JWT has the required Issuer (`iss` claim) and Audience (`aud` claim).
-- It also confirms that the JWT has been issued to a Cimpress Employee or a Vistaprint Customer. 
+- It also confirms that the JWT has been issued to a Cimpress Employee or a Vistaprint Customer.
 - It returns an Resource Policy document allowing for the execution of **any API method in any AWS Gateway based API using this authorizer**. Be careful as you may need authorization of the request in your lambda.
-- It can return the COAM permission of the user authenticated, so the lambda doesn't need to retrieve them each time. 
+- It can return the COAM permission of the user authenticated, so the lambda doesn't need to retrieve them each time.
 
 ## Setup
 
@@ -88,6 +88,7 @@ To create the lambda bundle, run the following command:
 ## Configuration
 
 If you are using `Serverless.com` you need to add the `authorizer` section and ARN of this lambda to the HTTP event configuration of the desired function:
+
 ```
 path: api/private
   method: get
@@ -95,15 +96,21 @@ path: api/private
     arn: arn:aws:lambda:eu-west-1:938096484345:function:jwt-authorizer-prod-authorize
 ```
 
-## Access context data 
+## Access context data
+
 The additional information can is accessible through the `requestContext` in the incoming event for the lambda.
+
 ### Internal user or web customer
+
 `event.requestContext.authorizer.isInternalUser` is a string that tells, based on the account in the JWT token, the type of user.
-* "true", for internal user
-* "false", for web customer
+
+- "true", for internal user
+- "false", for web customer
 
 ### Permissions
+
 `event.requestContext.authorizer.permissions` is a string that contains a _stringified_ version of a JSON object with the different COAM permissions.
+
 ```json
 {
     "resource_type_1":[
@@ -133,14 +140,16 @@ The additional information can is accessible through the `requestContext` in the
      ]
 }
 ```
+
 To read those values, you could something like that:
+
 ```javascript
 const getPermissions = (event, resourceType, resourceIdentifier) => {
-  if ('permissions' in event.requestContext.authorizer) {
+  if ("permissions" in event.requestContext.authorizer) {
     const perms = JSON.parse(event.requestContext.authorizer.permissions);
     if (perms && resourceType in perms) {
       const resourcePermissions = perms.offer_placement.find(
-        x => x.identifier === resourceIdentifier
+        (x) => x.identifier === resourceIdentifier,
       );
       return resourcePermissions ? resourcePermissions.permissions : [];
     }
@@ -148,6 +157,7 @@ const getPermissions = (event, resourceType, resourceIdentifier) => {
   return [];
 };
 ```
+
 ## License
 
 This project is licensed under the MIT license. See the [LICENSE](LICENSE.txt) file for more info.

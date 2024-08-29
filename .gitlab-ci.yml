@@ -1,7 +1,7 @@
 image: node:current-buster-slim
 
 variables:
-  CI_SERVERLESS_PROFILE: ''
+  CI_SERVERLESS_PROFILE: ""
 
 cache:
   key: "$CI_COMMIT_REF_NAME"
@@ -30,7 +30,7 @@ deploy_sandbox:
     - master
   environment:
     name: sandbox
-    NODE_ENV: development  
+    NODE_ENV: development
 
 deploy_production:
   stage: deploy
@@ -42,7 +42,6 @@ deploy_production:
   environment:
     name: production
     NODE_ENV: production
-
 # include:
 #   - project: 'vistaprint-org/product-catalog/pipeline-templates'
 #     ref: 'master'
