@@ -3,14 +3,14 @@ import jwt, { NotBeforeError, TokenExpiredError } from "jsonwebtoken";
 import middy from "@middy/core";
 import middyJsonBodyParser from "@middy/http-json-body-parser";
 import httpErrorHandler from "@middy/http-error-handler";
-import {
+import { createHttpError } from "src/utils";
+import type {
   APIGatewayProxyEvent,
   APIGatewayProxyResult,
   Handler,
 } from "aws-lambda";
-import { createHttpError } from "src/utils";
 
-interface CustomAuthorizerEvent extends APIGatewayProxyEvent {
+interface AuthorizerEvent extends APIGatewayProxyEvent {
   type: string;
   methodArn: string;
   authorizationToken?: string;
@@ -28,36 +28,33 @@ function generatePolicy(
   resource: string,
   context?: unknown,
 ): AWS.Policy {
-  const authResponse = {} as AWS.Policy;
+  const authResponse = {
+    principalId,
+    context,
+  } as AWS.Policy;
 
-  authResponse.principalId = principalId;
   if (effect && resource) {
-    const policyDocument = {} as AWS.PolicyDocument;
-    const statement = {} as AWS.Statement;
-
-    policyDocument.Version = "2012-10-17";
-    policyDocument.Statement = [];
-
-    statement.Action = "execute-api:Invoke";
-    statement.Effect = effect;
-    statement.Resource = resource;
-
-    policyDocument.Statement[0] = statement;
+    const policyDocument = {
+      Version: "2012-10-17",
+      Statement: [
+        {
+          Action: "execute-api:Invoke",
+          Effect: effect,
+          Resource: resource,
+        },
+      ],
+    } as AWS.PolicyDocument;
 
     authResponse.policyDocument = policyDocument;
-  }
-
-  if (context) {
-    authResponse.context = context;
   }
 
   return authResponse;
 }
 
 export const authorize: Handler<
-  CustomAuthorizerEvent,
+  AuthorizerEvent,
   APIGatewayProxyResult
-> = async (event: CustomAuthorizerEvent): Promise<APIGatewayProxyResult> => {
+> = async (event: AuthorizerEvent): Promise<APIGatewayProxyResult> => {
   if (!event.authorizationToken) {
     LOGGER(`Missing authorization token in event: ${JSON.stringify(event)}`);
     throw createHttpError(500, "Internal Error");
