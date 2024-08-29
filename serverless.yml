@@ -9,6 +9,21 @@ package:
 plugins:
   - serverless-localstack
 
+build:
+  esbuild:
+    bundle: true
+    minify: false
+    external:
+      - "@aws-sdk/client-s3"
+    exclude:
+      - "@aws-sdk/*"
+      - "!@aws-sdk/client-bedrock-runtime"
+    packages: external
+    buildConcurrency: 3
+    sourcemap:
+      type: linked
+      setNodeOptions: true
+
 custom:
   endpointType: REGIONAL
   region: ${opt:region, 'us-east-1'}
@@ -33,7 +48,7 @@ custom:
 
 provider:
   name: aws
-  endpointType: ${self:custom.endpointType}
+  endpointType: ${self:custom.endpointType, 'REGIONAL'}
   lambdaHashingVersion: 20201221
   logRetentionInDays: ${self:custom.logRetentionInDays.${self:custom.stage}}
   memorySize: ${self:custom.memorySize.${self:custom.stage}}
@@ -44,18 +59,28 @@ provider:
   timeout: ${self:custom.timeout.${self:custom.stage}}
   environment:
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1"
-    thundra_agent_lambda_debugger_enable: true
-    thundra_agent_lambda_debugger_auth_token: iQnwINa28Vq351P5G815kPdqDxjsnoE4qjLQI6eet/o=
-    thundra_apiKey: 52537f73-4e59-4e74-85cf-6518077b731e
   iam:
     role:
       managedPolicies:
         - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+  logs:
+    # Optional Configuration of Lambda Logging Configuration
+    lambda:
+      # The Log Format to be used for all lambda functions (default: Text)
+      logFormat: JSON
+      # The Application Log Level to be used, This can only be set if `logFormat` is set to `JSON`      
+      applicationLogLevel: ERROR
+      # The System Log Level to be used, This can only be set if `logFormat` is set to `JSON`      
+      systemLogLevel: INFO
+      # The LogGroup that will be used by default. If this is set the Framework will not create LogGroups for any functions
+      logGroup: /aws/lambda/${self:custom.stage}/lambda-authorizer
+    httpApi: true
+    restApi: true
   tags:
     service: ${self:service}
     stage: ${self:custom.stage}
   tracing:
-    apiGateway: false
+    apiGateway: true
     lambda: true
   vpc:
     securityGroupIds:
